@@ -1,3 +1,4 @@
+import { TodosFirebaseService } from '../../services/todos-firebase.service';
 import { TodosService } from './../../services/todos.service';
 import { Component, inject } from '@angular/core';
 
@@ -9,6 +10,7 @@ import { Component, inject } from '@angular/core';
 })
 export class HeaderComponent {
   todosService = inject(TodosService);
+  todosFirebaseService = inject(TodosFirebaseService);
   text: string = '';
 
   changeText(event: Event): void {
@@ -17,7 +19,9 @@ export class HeaderComponent {
   }
 
   addTodo(): void {
-    this.todosService.addTodo(this.text);
-    this.text = '';
+    this.todosFirebaseService.addTodo(this.text).subscribe(addedTodoId => {
+      this.todosService.addTodo(this.text, addedTodoId);
+      this.text = '';
+    });
   }
 }

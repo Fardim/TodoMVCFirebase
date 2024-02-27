@@ -14,11 +14,11 @@ export class TodosService {
     this.filterSig.set(filterName);
   }
 
-  addTodo(text: string) {
+  addTodo(text: string, id: string) {
     const newTodo: TodoInterface = {
       text,
       isCompleted: false,
-      id: Math.random().toString(16),
+      id: id,
     };
 
     this.todoSig.update(todos => [...todos, newTodo]);

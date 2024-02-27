@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { TodoInterface } from '../../types/todo.interface';
 import { TodosService } from '../../services/todos.service';
+import { TodosFirebaseService } from '../../services/todos-firebase.service';
 
 @Component({
   selector: 'app-todo',
@@ -11,7 +12,8 @@ import { TodosService } from '../../services/todos.service';
   imports: [CommonModule],
 })
 export class TodoComponent implements OnInit, OnChanges {
-  todosService = inject(TodosService)
+  todosService = inject(TodosService);
+  todosFirebaseService = inject(TodosFirebaseService);
   @Input({ required: true }) todo!: TodoInterface;
   @Input({ required: true }) isEditing!: boolean;
   @Output() setEditingId: EventEmitter<string | null> = new EventEmitter();
@@ -37,12 +39,24 @@ export class TodoComponent implements OnInit, OnChanges {
   }
 
   changeTodo(): void {
-    this.todosService.changeTodo(this.todo.id, this.editingText);
+    const dataToUpdate = {
+      text: this.editingText,
+      isCompleted: this.todo.isCompleted
+    };
+    this.todosFirebaseService.updateTodo(this.todo.id, dataToUpdate).subscribe(resp => {
+      this.todosService.changeTodo(this.todo.id, this.editingText);
+    });
     this.setEditingId.emit(null);
   }
 
   toggleTodo() {
-    this.todosService.toggleTodo(this.todo.id);
+    const dataToUpdate = {
+      text: this.todo.text,
+      isCompleted: !this.todo.isCompleted
+    };
+    this.todosFirebaseService.updateTodo(this.todo.id, dataToUpdate).subscribe(resp => {
+      this.todosService.toggleTodo(this.todo.id);
+    });
   }
 
   setTodoInEditMode() {
@@ -50,6 +64,8 @@ export class TodoComponent implements OnInit, OnChanges {
   }
 
   removeTodo() {
-    this.todosService.removeTodo(this.todo.id);
+    this.todosFirebaseService.removeTodo(this.todo.id).subscribe(resp => {
+      this.todosService.removeTodo(this.todo.id);
+    });
   }
 }
